@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import psycopg2
 import os
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 app = Flask(__name__)
 
@@ -28,8 +29,7 @@ def receive_votes():
     if not data or 'results' not in data:
         return jsonify({"error": "Invalid data"}), 400
 
-    timestamp = data.get("timestamp", datetime.now().isoformat())
-
+    timestamp = data.get("timestamp", datetime.now(ZoneInfo('Asia/Ho_Chi_Minh')).isoformat())
     
     with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
