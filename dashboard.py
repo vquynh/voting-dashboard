@@ -40,24 +40,34 @@ if not df.empty:
     latest_time = df['timestamp'].max().strftime("%Y-%m-%d %H:%M:%S")
     st.markdown(f"### 🕒 Latest Results (Updated: {latest_time})")
 
-    # Get the most recent vote per candidate
+    # Get most recent vote per candidate
     latest_votes = df.loc[df.groupby('name')['timestamp'].idxmax()]
 
-    # Sort by votes descending
-    latest_votes_sorted = latest_votes.sort_values(by='votes', ascending=False)
+    # ✅ Sort by votes descending before any visualization
+    latest_votes_sorted = latest_votes.sort_values(by='votes', ascending=False).copy()
 
-    # Bar chart - sorted vote counts
+    # 🔥 Ensure index order is preserved when plotting
+    latest_votes_sorted.reset_index(drop=True, inplace=True)
+
+    # Bar chart - sorted descending
     st.subheader("🏆 Current Rankings (Sorted Descending)")
     st.bar_chart(latest_votes_sorted.set_index('name')[['votes']].style.format("{:.2f}"))
 
-    # Line chart - vote trends over time
+    # Line chart - vote trends over time (still unsorted, that's OK)
     st.subheader("📈 Vote Trends Over Time")
     pivot_df = df.pivot(index='timestamp', columns='name', values='votes').fillna(0)
     st.line_chart(pivot_df)
 
-    # Raw data table - sorted
+    # Raw data table - sorted by vote descending
     st.subheader("📋 Raw Data (Sorted by Votes Descending)")
-    st.dataframe(df.sort_values(by=['timestamp', 'votes'], ascending=[False, False]).style.format({"votes": "{:.2f}"}))
+    st.dataframe(
+        df.loc[df['name'].isin(latest_votes_sorted['name'])]
+        .drop_duplicates(subset=['name'], keep='last')
+        .sort_values(by='votes', ascending=False)
+        .reset_index(drop=True)
+        [['name', 'votes']]
+        .style.format({"votes": "{:.2f}"})
+    )
 
 else:
     st.warning("⚠️ No data found yet. Make sure the scraper is running and sending data.")
