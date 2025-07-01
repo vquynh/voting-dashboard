@@ -17,7 +17,7 @@ def init_db():
                     id SERIAL PRIMARY KEY,
                     timestamp TEXT,
                     name TEXT,
-                    votes INTEGER
+                    votes DECIMAL(10, 2)
                 )
             ''')
         conn.commit()
