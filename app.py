@@ -33,7 +33,7 @@ def receive_votes():
     
     with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
-            for candidate in data['candidates']:
+            for candidate in data['results']:
                 cur.execute('''
                     INSERT INTO votes (timestamp, name, votes)
                     VALUES (%s, %s, %s)
