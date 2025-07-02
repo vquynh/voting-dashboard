@@ -105,20 +105,34 @@ if not df.empty:
     df_chart['timestamp'] = df_chart['timestamp'].dt.tz_localize(None)
 
     # Step 3: Build the chart with custom color scale domain
+    # Function to extract initials
+    def get_initials(name):
+        return ''.join([part[0] for part in name.split() if part.strip()][:4])  # Take first 2 letters
+
+    # Add a new 'initials' column
+    latest_votes_sorted['initials'] = latest_votes_sorted['name'].apply(get_initials)
+
+    # Merge initials back into main DataFrame for charting
+    df_chart = df.merge(
+        latest_votes_sorted[['name', 'initials']],
+        on='name',
+        how='left'
+    )
+
+    # Use initials for legend and sorting
+    sorted_names = list(latest_votes_sorted['initials'])
+
     line_chart = alt.Chart(df_chart).mark_line(point=True).encode(
         x=alt.X('timestamp:T', title='Thời gian'),
         y=alt.Y('votes:Q', title='Tỉ lệ bình chọn (%)'),
         color=alt.Color(
-            'name:N',
+            'initials:N',
             title='Tân binh',
             scale=alt.Scale(domain=sorted_names),
             sort=None,
             legend=alt.Legend(
                 orient='right',         # ← Move legend to the right
                 direction='vertical',   # ↑ Vertical layout for more space
-                labelLimit=200,         # ← Allow longer labels
-                titleLimit=200,         # ↑ Increase title width if needed
-                labelOverlap=False      # Prevent overlapping
             )
         ),
         tooltip=[
@@ -127,7 +141,8 @@ if not df.empty:
             alt.Tooltip('votes:Q', title='Tỉ lệ bình chọn (%)', format='.2f')
         ]
     ).properties(
-        height=500
+        height=500,
+        width="container",  # Optional: auto-width to match page layout
     ).interactive()
 
     st.altair_chart(line_chart, use_container_width=True)
