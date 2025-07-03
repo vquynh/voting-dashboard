@@ -82,7 +82,7 @@ if not df.empty:
             return [''] * len(row)
 
     # 🔮 Altair Bar Chart
-    st.subheader("🏆 Thứ hạng hiện tại")
+    st.subheader("🏆 Xếp hạng hiện tại")
 
     bar_chart = alt.Chart(latest_votes_sorted).mark_bar(
         tooltip=True
@@ -91,14 +91,15 @@ if not df.empty:
             axis=alt.Axis(
             labelAngle=-45,      # ← Rotate labels 45 degrees
             labelLimit=200,      # ← Allow longer labels
-            labelOverlap=False   # ← Prevent overlapping
-        )),
+            labelOverlap=False,   # ← Prevent overlapping
+            title=None,
+            )),
         y=alt.Y('votes:Q', title='Tỉ lệ bình chọn (%)'),
         color=alt.condition(
             alt.datum.rank <= 3,
             alt.value('#28a745'),  # Green for top 3
-            alt.value('#4e79a7')   # Default blue
-        ),
+            alt.value('#4e79a7') ,  # Default blue
+    ),
         tooltip=[
             alt.Tooltip('name:N', title='Tân binh'),
             alt.Tooltip('votes:Q', title='Tỉ lệ bình chọn (%)', format='.2f'),
