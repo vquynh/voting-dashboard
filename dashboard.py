@@ -122,7 +122,7 @@ if not df.empty:
     colors_by_names = [name_color_map.get(name, '#4e79a7') for name in sorted_names]  # Default to blue if not found
 
     # Sort and prepare data
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_localize(None)
     df = df.sort_values(by='timestamp')
 
     # Pivot data (one column per candidate)
