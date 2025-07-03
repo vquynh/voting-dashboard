@@ -3,7 +3,25 @@ import psycopg2
 import pandas as pd
 import os
 import altair as alt
-from zoneinfo import ZoneInfo
+#  Literal["black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua", "orange", "aliceblue", "antiquewhite", "aquamarine", "azure", "beige", "bisque", "blanchedalmond", "blueviolet", "brown", "burlywood", "cadetblue", "chartreuse", "chocolate", "coral", "cornflowerblue", "cornsilk", "crimson", "cyan", "darkblue", "darkcyan", "darkgoldenrod", "darkgray", "darkgreen", "darkgrey", "darkkhaki", "darkmagenta", "darkolivegreen", "darkorange", "darkorchid", "darkred", "darksalmon", "darkseagreen", "darkslateblue", "darkslategray", "darkslategrey", "darkturquoise", "darkviolet", "deeppink", "deepskyblue", "dimgray", "dimgrey", "dodgerblue", "firebrick", "floralwhite", "forestgreen", "gainsboro", "ghostwhite", "gold", "goldenrod", "greenyellow", "grey", "honeydew", "hotpink", "indianred", "indigo", "ivory", "khaki", "lavender", "lavenderblush", "lawngreen", "lemonchiffon", "lightblue", "lightcoral", "lightcyan", "lightgoldenrodyellow", "lightgray", "lightgreen", "lightgrey", "lightpink", "lightsalmon", "lightseagreen", "lightskyblue", "lightslategray", "lightslategrey", "lightsteelblue", "lightyellow", "limegreen", "linen", "magenta", "mediumaquamarine", "mediumblue", "mediumorchid", "mediumpurple", "mediumseagreen", "mediumslateblue", "mediumspringgreen", "mediumturquoise", "mediumvioletred", "midnightblue", "mintcream", "mistyrose", "moccasin", "navajowhite", "oldlace", "olivedrab", "orangered", "orchid", "palegoldenrod", "palegreen", "paleturquoise", "palevioletred", "papayawhip", "peachpuff", "peru", "pink", "plum", "powderblue", "rosybrown", "royalblue", "saddlebrown", "salmon", "sandybrown", "seagreen", "seashell", "sienna", "skyblue", "slateblue", "slategray", "slategrey", "snow", "springgreen", "steelblue", "tan", "thistle", "tomato", "turquoise", "violet", "wheat", "whitesmoke", "yellowgreen", "rebeccapurple"]
+name_color_map = {
+    "Lê Duy Lân": "#1f77b4",    # Blue
+    "Lê Phạm Minh Quân": "#ff7f0e",      # Orange
+    "Nguyễn Thanh Phúc Nguyên": "#2ca02c",  # Green
+    "Hồ Đông Quan": "#b21218",    # Red
+    "Nguyễn Văn Liêm": "#9467bd",      # Purple
+    "Đặng Đức Duy": "#8c564b",    # Brown
+    "Nguyễn Lâm Anh": "#fbb5bd",    # Pink
+    "Phạm Văn Tâm": "#7f7f7f",    # Gray
+    "Thái Lê Minh Hiếu": "#bcbd22",     # Yellow-Green
+    "Nguyễn Phi Long": "#17becf",     # Cyan
+    "Bạch Hồng Cường": "#fb7f60",  # Light Red
+    "Nguyễn Hữu Sơn": "silver",
+    "Lê Bin Thế Vĩ": "#98df8a",   # Light Green
+    "Tạ Hoàng Long": "yellow",    # Light Red
+    "Nguyễn Văn Khang": "#c5b0d5",    # Light Purple
+    "Đỗ Minh Tân": "#c49c94",    # Light Brown
+}
 
 # Set wide layout
 st.set_page_config(layout="wide")
@@ -42,8 +60,9 @@ df = load_data()
 
 # Show latest update time
 if not df.empty:
-    latest_time = df['timestamp'].max().strftime("%Y-%m-%d %H:%M:%S")
-    st.markdown(f"#### 🕒 Kết quả mới nhất (cập nhật lúc: {latest_time})")
+    latest_time = df['timestamp'].max()
+    latest_timestamp = latest_time.strftime("%Y-%m-%d %H:%M:%S")
+    st.markdown(f"#### 🕒 Kết quả mới nhất (cập nhật lúc: {latest_timestamp})")
 
     # Get most recent vote per candidate
     latest_votes = df.loc[df.groupby('name')['timestamp'].idxmax()]
@@ -68,7 +87,7 @@ if not df.empty:
     bar_chart = alt.Chart(latest_votes_sorted).mark_bar(
         tooltip=True
     ).encode(
-        x=alt.X('name:N', sort='-y', title='Tân binh',
+        x=alt.X('name:N', sort='-y',
             axis=alt.Axis(
             labelAngle=-45,      # ← Rotate labels 45 degrees
             labelLimit=200,      # ← Allow longer labels
@@ -98,51 +117,51 @@ if not df.empty:
     # Step 1: Get latest vote per candidate and sort by vote descending
     latest_votes = df.loc[df.groupby('name')['timestamp'].idxmax()]
     latest_votes_sorted = latest_votes.sort_values(by='votes', ascending=False)
-    sorted_names = list(latest_votes_sorted['name'])
+    sorted_names = latest_votes_sorted['name'].tolist()
+    colors_by_names = [name_color_map.get(name, '#4e79a7') for name in sorted_names]  # Default to blue if not found
 
-    # Step 2: Make sure timestamp is treated as "naive"
-    df_chart = df.copy()
-    df_chart['timestamp'] = df_chart['timestamp'].dt.tz_localize(None)
+    # Sort and prepare data
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df = df.sort_values(by='timestamp')
 
-    # Step 3: Build the chart with custom color scale domain
-    # Function to extract initials
-    def get_initials(name):
-        return ''.join([part[0] for part in name.split() if part.strip()][:4])  # Take first 2 letters
+    # Pivot data (one column per candidate)
+    pivot_df = df.reset_index().pivot_table(
+    index='timestamp',
+    columns='name',
+    values='votes',
+    aggfunc='last'  # or 'mean', 'first', 'max'
+).ffill()  # Forward fill gaps
 
-    # Add a new 'initials' column
-    latest_votes_sorted['initials'] = latest_votes_sorted['name'].apply(get_initials)
+    # Optional: Rolling average for smoother transitions
+    smoothed_df = pivot_df.rolling(window=10, min_periods=1).mean().reset_index()
 
-    # Merge initials back into main DataFrame for charting
-    df_chart = df.merge(
-        latest_votes_sorted[['name', 'initials']],
-        on='name',
-        how='left'
-    )
+    # Melt back for charting if needed
+    melted_df = smoothed_df.melt(id_vars=['timestamp'], var_name='name', value_name='votes')
 
-    # Use initials for legend and sorting
-    sorted_names = list(latest_votes_sorted['initials'])
-
-    line_chart = alt.Chart(df_chart).mark_line(point=True).encode(
+    # Build the chart
+    line_chart = alt.Chart(melted_df).mark_line(
+        point=True,
+        interpolate='catmull-rom'  # ← Smooth interpolation
+    ).encode(
         x=alt.X('timestamp:T', title='Thời gian'),
         y=alt.Y('votes:Q', title='Tỉ lệ bình chọn (%)'),
-        color=alt.Color(
-            'initials:N',
-            title='Tân binh',
-            scale=alt.Scale(domain=sorted_names),
+        color=alt.Color('name:N', title='Tân binh',scale=alt.Scale(domain=sorted_names, range=colors_by_names),
             sort=None,
             legend=alt.Legend(
-                orient='right',         # ← Move legend to the right
-                direction='vertical',   # ↑ Vertical layout for more space
-            )
-        ),
+                orient='bottom',         # ← Move legend to the right
+                direction= 'vertical',  # ← Horizontal layout
+                labelLimit = 200,
+                title=None,
+                # ← No title for the legend
+            )),
         tooltip=[
             alt.Tooltip('timestamp:T', title='Thời gian', format='%Y-%m-%d %H:%M:%S'),
             alt.Tooltip('name:N', title='Tân binh'),
             alt.Tooltip('votes:Q', title='Tỉ lệ bình chọn (%)', format='.2f')
         ]
     ).properties(
-        height=500,
-        width="container",  # Optional: auto-width to match page layout
+        height=1000,
+        width="container"
     ).interactive()
 
     st.altair_chart(line_chart, use_container_width=True)
