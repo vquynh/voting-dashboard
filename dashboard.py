@@ -123,25 +123,11 @@ if not df.empty:
 
     # Sort and prepare data
     df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_localize(None)
-    df = df.sort_values(by='timestamp')
-
-    # Pivot data (one column per candidate)
-    pivot_df = df.reset_index().pivot_table(
-    index='timestamp',
-    columns='name',
-    values='votes',
-    aggfunc='last'  # or 'mean', 'first', 'max'
-).ffill()  # Forward fill gaps
-
-    # Optional: Rolling average for smoother transitions
-    smoothed_df = pivot_df.rolling(window=10, min_periods=1).mean().reset_index()
-
-    # Melt back for charting if needed
-    melted_df = smoothed_df.melt(id_vars=['timestamp'], var_name='name', value_name='votes')
+    df_chart = df.sort_values(by='timestamp')
 
     # Build the chart
-    line_chart = alt.Chart(melted_df).mark_line(
-        point=True,
+    line_chart = alt.Chart(df_chart).mark_line(
+        point=False,
         interpolate='catmull-rom'  # ← Smooth interpolation
     ).encode(
         x=alt.X('timestamp:T', title='Thời gian'),
