@@ -1,8 +1,13 @@
-import streamlit as st
 import psycopg2
 import pandas as pd
 import os
 import altair as alt
+import streamlit as st
+from PIL import Image
+import requests
+from io import BytesIO
+from streamlit_autorefresh import st_autorefresh
+
 #  Literal["black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua", "orange", "aliceblue", "antiquewhite", "aquamarine", "azure", "beige", "bisque", "blanchedalmond", "blueviolet", "brown", "burlywood", "cadetblue", "chartreuse", "chocolate", "coral", "cornflowerblue", "cornsilk", "crimson", "cyan", "darkblue", "darkcyan", "darkgoldenrod", "darkgray", "darkgreen", "darkgrey", "darkkhaki", "darkmagenta", "darkolivegreen", "darkorange", "darkorchid", "darkred", "darksalmon", "darkseagreen", "darkslateblue", "darkslategray", "darkslategrey", "darkturquoise", "darkviolet", "deeppink", "deepskyblue", "dimgray", "dimgrey", "dodgerblue", "firebrick", "floralwhite", "forestgreen", "gainsboro", "ghostwhite", "gold", "goldenrod", "greenyellow", "grey", "honeydew", "hotpink", "indianred", "indigo", "ivory", "khaki", "lavender", "lavenderblush", "lawngreen", "lemonchiffon", "lightblue", "lightcoral", "lightcyan", "lightgoldenrodyellow", "lightgray", "lightgreen", "lightgrey", "lightpink", "lightsalmon", "lightseagreen", "lightskyblue", "lightslategray", "lightslategrey", "lightsteelblue", "lightyellow", "limegreen", "linen", "magenta", "mediumaquamarine", "mediumblue", "mediumorchid", "mediumpurple", "mediumseagreen", "mediumslateblue", "mediumspringgreen", "mediumturquoise", "mediumvioletred", "midnightblue", "mintcream", "mistyrose", "moccasin", "navajowhite", "oldlace", "olivedrab", "orangered", "orchid", "palegoldenrod", "palegreen", "paleturquoise", "palevioletred", "papayawhip", "peachpuff", "peru", "pink", "plum", "powderblue", "rosybrown", "royalblue", "saddlebrown", "salmon", "sandybrown", "seagreen", "seashell", "sienna", "skyblue", "slateblue", "slategray", "slategrey", "snow", "springgreen", "steelblue", "tan", "thistle", "tomato", "turquoise", "violet", "wheat", "whitesmoke", "yellowgreen", "rebeccapurple"]
 name_color_map = {
     "Lê Duy Lân": "#1f77b4",    # Blue
@@ -22,6 +27,27 @@ name_color_map = {
     "Nguyễn Văn Khang": "#c5b0d5",    # Light Purple
     "Đỗ Minh Tân": "#c49c94",    # Light Brown
 }
+image_map = {
+    "Lê Duy Lân": "https://asset.onfan.vn/voting/banner/avatarLeDuyLan.jpg",    # Blue
+    "Lê Phạm Minh Quân": "https://asset.onfan.vn/voting/banner/avatarLePhamMinhQuan.jpg",
+    "Nguyễn Thanh Phúc Nguyên": "https://asset.onfan.vn/voting/banner/avatarNguyenThanhPhucNguyen.jpg",  # Green
+    "Hồ Đông Quan": "https://asset.onfan.vn/voting/banner/avatarHoongQuan.jpg",    # Red
+    "Nguyễn Văn Liêm": "https://asset.onfan.vn/voting/banner/avatarNguyenVanLiem.jpg",      # Purple
+    "Đặng Đức Duy": "https://asset.onfan.vn/voting/banner/avatarangucDuy.jpg",    # Brown
+    "Nguyễn Lâm Anh": "https://asset.onfan.vn/voting/banner/avatarNguyenLamAnh.jpg",    # Pink
+    "Phạm Văn Tâm": "https://asset.onfan.vn/voting/banner/avatarNguyenVanTam.jpg",    # Gray
+    "Thái Lê Minh Hiếu": "https://asset.onfan.vn/voting/banner/avatarThaiLeMinhHieu.jpg",     # Yellow-Green
+    "Nguyễn Phi Long": "https://asset.onfan.vn/voting/banner/avatarNguyenPhiLong.jpg",     # Cyan
+    "Bạch Hồng Cường": "https://asset.onfan.vn/voting/banner/avatarBachHongCuong.jpg",  # Light Red
+    "Nguyễn Hữu Sơn": "https://asset.onfan.vn/voting/banner/avatarNguyenHuuSon.jpg",
+    "Lê Bin Thế Vĩ": "https://asset.onfan.vn/voting/banner/avatarLeBinTheVi.jpg",   # Light Green
+    "Tạ Hoàng Long": "https://asset.onfan.vn/voting/banner/avatarTaHoangLong.jpg",    # Light Red
+    "Nguyễn Văn Khang": "https://asset.onfan.vn/voting/banner/avatarNguyenVanKhang.jpg",    # Light Purple
+    "Đỗ Minh Tân": "https://asset.onfan.vn/voting/banner/avataroMinhTan.jpg",    # Light Brown
+}
+
+# Auto-refresh every 10 seconds (10,000 milliseconds)
+st_autorefresh(interval=10_000, limit=None, key="unique_auto_refresh")
 
 # Set wide layout
 st.set_page_config(layout="wide")
@@ -52,65 +78,71 @@ def load_data():
         st.error(f"❌ Database connection error: {e}")
         return pd.DataFrame()
 
+# Load data
+df = load_data()
 # Page Title
 st.title("📊 Bình chọn Tân Binh Toàn Năng")
 
-# Load data
-df = load_data()
-
+# Auto-refresh every 60 seconds (10,000 milliseconds)
+st_autorefresh(interval=60_000, key="auto_refresh")
 # Show latest update time
 if not df.empty:
+    ##############################################################################
+    # 1.  PREP ‑ get latest vote snapshot, sort, add rank
+    ##############################################################################
     latest_time = df['timestamp'].max()
-    latest_timestamp = latest_time.strftime("%Y-%m-%d %H:%M:%S")
+    latest_timestamp = latest_time.strftime("%Y‑%m‑%d %H:%M:%S")
     st.markdown(f"#### 🕒 Kết quả mới nhất (cập nhật lúc: {latest_timestamp})")
 
-    # Get most recent vote per candidate
     latest_votes = df.loc[df.groupby('name')['timestamp'].idxmax()]
-
-    # Sort by votes descending
-    latest_votes_sorted = latest_votes.sort_values(by='votes', ascending=False).copy()
-    latest_votes_sorted.reset_index(drop=True, inplace=True)
-
-    # Add Rank column
-    latest_votes_sorted['rank'] = latest_votes_sorted.index + 1
-
-    # Define top 3 highlight function
-    def highlight_top_3(row):
-        if row.name < 3:
-            return ['background-color: #d4edda'] * len(row)  # Light green
-        else:
-            return [''] * len(row)
-
-    # 🔮 Altair Bar Chart
-    st.subheader("🏆 Xếp hạng hiện tại")
-
-    bar_chart = alt.Chart(latest_votes_sorted).mark_bar(
-        tooltip=True
-    ).encode(
-        x=alt.X('name:N', sort='-y',
-            axis=alt.Axis(
-            labelAngle=-45,      # ← Rotate labels 45 degrees
-            labelLimit=200,      # ← Allow longer labels
-            labelOverlap=False,   # ← Prevent overlapping
-            title=None,
-            )),
-        y=alt.Y('votes:Q', title='Tỉ lệ bình chọn (%)'),
-        color=alt.condition(
-            alt.datum.rank <= 3,
-            alt.value('#28a745'),  # Green for top 3
-            alt.value('#4e79a7') ,  # Default blue
-    ),
-        tooltip=[
-            alt.Tooltip('name:N', title='Tân binh'),
-            alt.Tooltip('votes:Q', title='Tỉ lệ bình chọn (%)', format='.2f'),
-            alt.Tooltip('rank:O', title='Thứ hạng')
-        ]
-    ).properties(
-        height=500,
-        width="container"  # Optional: auto-width to match page layout
+    latest_votes_sorted = (
+        latest_votes
+        .sort_values(by='votes', ascending=False)
+        .reset_index(drop=True)
+        .assign(rank=lambda d: d.index + 1)  # 1‑based rank
     )
 
-    st.altair_chart(bar_chart, use_container_width=True)
+
+    ##############################################################################
+    # 2.  HELPER – cache image downloads so they aren’t fetched every rerun
+    ##############################################################################
+    @st.cache_resource(show_spinner=False)
+    def load_image(url: str) -> Image.Image | None:
+        try:
+            return Image.open(BytesIO(requests.get(url, timeout=5).content))
+        except Exception:
+            return None
+
+
+    ##############################################################################
+    # 3.  UI – ranked list with image, name, vote %
+    ##############################################################################
+    st.subheader("🏆 Xếp hạng")
+    all_rows_html = ""  # collect all rows here
+
+    for _, row in latest_votes_sorted.iterrows():
+        is_top_3 = row["rank"] <= 3
+        bg_color = "#d4edda" if is_top_3 else "#f8d7da"  # Green or Red
+
+        image_url = image_map.get(row["name"], "")
+        img_html = f"<img src='{image_url}' width='30' style='border-radius:4px;'>" if image_url else ""
+
+        row_html = f"""
+            <div style="background-color:{bg_color}">
+                <table style="width:100%; border-spacing:0;">
+                    <tr style="vertical-align:middle;">
+                        <td style="width:8%; text-align:center; font-size:14px; font-weight:500;">#{row['rank']}</td>
+                        <td style="width:12%;">{img_html}</td>
+                        <td style="width:60%; font-size:14px; font-weight:500;">{row['name']}</td>
+                        <td style="width:20%; text-align:right; font-size:14px;"><strong>{row['votes']:.2f}%</strong></td>
+                    </tr>
+                </table>
+            </div>
+            """
+        all_rows_html += row_html  # accumulate
+
+    # Render all rows in one go
+    st.markdown(all_rows_html, unsafe_allow_html=True)
 
     # 📈 Altair Line Chart with Legend Sorted by Vote Score and UTC Timestamps
     st.subheader("📈 Tỉ lệ bình chọn theo thời gian")
