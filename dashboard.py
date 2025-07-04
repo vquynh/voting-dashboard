@@ -48,7 +48,7 @@ image_map = {
 }
 
 # Auto-refresh every 10 seconds (10,000 milliseconds)
-st_autorefresh(interval=10_000, limit=None, key="unique_auto_refresh")
+#st_autorefresh(interval=10_000, limit=None, key="unique_auto_refresh")
 
 # Set wide layout
 st.set_page_config(layout="wide")
@@ -161,7 +161,7 @@ if not df.empty:
         point=False,
         interpolate='catmull-rom'  # ← Smooth interpolation
     ).encode(
-        x=alt.X('timestamp:T', title='Thời gian', scale=alt.Scale(domain=[(latest_time - timedelta(hours=2)).tz_localize(None), latest_time.tz_localize(None)])),
+        x=alt.X('timestamp:T', title='Thời gian'),
         y=alt.Y('votes:Q', title='Tỉ lệ bình chọn (%)', scale=alt.Scale(domain=[1, 14])),
         color=alt.Color('name:N', title='Tân binh',scale=alt.Scale(domain=sorted_names, range=colors_by_names),
             sort=None,
