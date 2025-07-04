@@ -2,5 +2,6 @@ Flask
 gunicorn
 psycopg2-binary
 streamlit
+streamlit_autorefresh
 pandas
 altair
