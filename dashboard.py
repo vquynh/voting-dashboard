@@ -7,6 +7,7 @@ from PIL import Image
 import requests
 from io import BytesIO
 from streamlit_autorefresh import st_autorefresh
+from datetime import datetime, timedelta
 
 #  Literal["black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua", "orange", "aliceblue", "antiquewhite", "aquamarine", "azure", "beige", "bisque", "blanchedalmond", "blueviolet", "brown", "burlywood", "cadetblue", "chartreuse", "chocolate", "coral", "cornflowerblue", "cornsilk", "crimson", "cyan", "darkblue", "darkcyan", "darkgoldenrod", "darkgray", "darkgreen", "darkgrey", "darkkhaki", "darkmagenta", "darkolivegreen", "darkorange", "darkorchid", "darkred", "darksalmon", "darkseagreen", "darkslateblue", "darkslategray", "darkslategrey", "darkturquoise", "darkviolet", "deeppink", "deepskyblue", "dimgray", "dimgrey", "dodgerblue", "firebrick", "floralwhite", "forestgreen", "gainsboro", "ghostwhite", "gold", "goldenrod", "greenyellow", "grey", "honeydew", "hotpink", "indianred", "indigo", "ivory", "khaki", "lavender", "lavenderblush", "lawngreen", "lemonchiffon", "lightblue", "lightcoral", "lightcyan", "lightgoldenrodyellow", "lightgray", "lightgreen", "lightgrey", "lightpink", "lightsalmon", "lightseagreen", "lightskyblue", "lightslategray", "lightslategrey", "lightsteelblue", "lightyellow", "limegreen", "linen", "magenta", "mediumaquamarine", "mediumblue", "mediumorchid", "mediumpurple", "mediumseagreen", "mediumslateblue", "mediumspringgreen", "mediumturquoise", "mediumvioletred", "midnightblue", "mintcream", "mistyrose", "moccasin", "navajowhite", "oldlace", "olivedrab", "orangered", "orchid", "palegoldenrod", "palegreen", "paleturquoise", "palevioletred", "papayawhip", "peachpuff", "peru", "pink", "plum", "powderblue", "rosybrown", "royalblue", "saddlebrown", "salmon", "sandybrown", "seagreen", "seashell", "sienna", "skyblue", "slateblue", "slategray", "slategrey", "snow", "springgreen", "steelblue", "tan", "thistle", "tomato", "turquoise", "violet", "wheat", "whitesmoke", "yellowgreen", "rebeccapurple"]
 name_color_map = {
@@ -160,8 +161,8 @@ if not df.empty:
         point=False,
         interpolate='catmull-rom'  # ← Smooth interpolation
     ).encode(
-        x=alt.X('timestamp:T', title='Thời gian'),
-        y=alt.Y('votes:Q', title='Tỉ lệ bình chọn (%)'),
+        x=alt.X('timestamp:T', title='Thời gian', scale=alt.Scale(domain=[(latest_time - timedelta(hours=2)).tz_localize(None), latest_time.tz_localize(None)])),
+        y=alt.Y('votes:Q', title='Tỉ lệ bình chọn (%)', scale=alt.Scale(domain=[1, 14])),
         color=alt.Color('name:N', title='Tân binh',scale=alt.Scale(domain=sorted_names, range=colors_by_names),
             sort=None,
             legend=alt.Legend(
