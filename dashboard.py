@@ -59,8 +59,8 @@ def load_data():
     try:
         conn = psycopg2.connect(DB_URL)
         query = '''
-            SELECT timestamp, name, votes_debut
-            FROM votes
+            SELECT timestamp, name, votes
+            FROM votes_debut
             ORDER BY timestamp DESC
         '''
         df = pd.read_sql(query, conn)
