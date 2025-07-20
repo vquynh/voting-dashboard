@@ -8,6 +8,9 @@ import requests
 from io import BytesIO
 from streamlit_autorefresh import st_autorefresh
 from datetime import datetime, timedelta
+import json
+import streamlit.components.v1 as components
+
 
 #  Literal["black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua", "orange", "aliceblue", "antiquewhite", "aquamarine", "azure", "beige", "bisque", "blanchedalmond", "blueviolet", "brown", "burlywood", "cadetblue", "chartreuse", "chocolate", "coral", "cornflowerblue", "cornsilk", "crimson", "cyan", "darkblue", "darkcyan", "darkgoldenrod", "darkgray", "darkgreen", "darkgrey", "darkkhaki", "darkmagenta", "darkolivegreen", "darkorange", "darkorchid", "darkred", "darksalmon", "darkseagreen", "darkslateblue", "darkslategray", "darkslategrey", "darkturquoise", "darkviolet", "deeppink", "deepskyblue", "dimgray", "dimgrey", "dodgerblue", "firebrick", "floralwhite", "forestgreen", "gainsboro", "ghostwhite", "gold", "goldenrod", "greenyellow", "grey", "honeydew", "hotpink", "indianred", "indigo", "ivory", "khaki", "lavender", "lavenderblush", "lawngreen", "lemonchiffon", "lightblue", "lightcoral", "lightcyan", "lightgoldenrodyellow", "lightgray", "lightgreen", "lightgrey", "lightpink", "lightsalmon", "lightseagreen", "lightskyblue", "lightslategray", "lightslategrey", "lightsteelblue", "lightyellow", "limegreen", "linen", "magenta", "mediumaquamarine", "mediumblue", "mediumorchid", "mediumpurple", "mediumseagreen", "mediumslateblue", "mediumspringgreen", "mediumturquoise", "mediumvioletred", "midnightblue", "mintcream", "mistyrose", "moccasin", "navajowhite", "oldlace", "olivedrab", "orangered", "orchid", "palegoldenrod", "palegreen", "paleturquoise", "palevioletred", "papayawhip", "peachpuff", "peru", "pink", "plum", "powderblue", "rosybrown", "royalblue", "saddlebrown", "salmon", "sandybrown", "seagreen", "seashell", "sienna", "skyblue", "slateblue", "slategray", "slategrey", "snow", "springgreen", "steelblue", "tan", "thistle", "tomato", "turquoise", "violet", "wheat", "whitesmoke", "yellowgreen", "rebeccapurple"]
 name_color_map = {
@@ -151,8 +154,34 @@ if not df.empty:
     df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_localize(None)
     df_chart = df.sort_values(by='timestamp')
 
-    # Build the chart
-    line_chart = alt.Chart(df_chart).mark_line(
+    # Build the chart for a wide layout
+    line_chart_right = alt.Chart(df_chart).mark_line(
+        point=False,
+    ).encode(
+        #x=alt.X('timestamp:T', title='Thời gian', scale=alt.Scale(domain=[(latest_time - timedelta(hours=2)).tz_localize(None), latest_time.tz_localize(None)])),
+        x=alt.X('timestamp:T', title='Thời gian'),
+        y=alt.Y('votes:Q', title='Tỉ lệ bình chọn (%)'),
+        color=alt.Color('name:N', title='Tân binh',scale=alt.Scale(domain=sorted_names, range=colors_by_names),
+            sort=None,
+            legend=alt.Legend(
+                orient='right',         # ← Move legend to the right
+                direction= 'vertical',  # ← Vertical layout
+                labelLimit = 200,
+                title=None,
+                # ← No title for the legend
+            )),
+        tooltip=[
+            alt.Tooltip('timestamp:T', title='Thời gian', format='%Y-%m-%d %H:%M:%S'),
+            alt.Tooltip('name:N', title='Tân binh'),
+            alt.Tooltip('votes:Q', title='Tỉ lệ bình chọn (%)', format='.2f')
+        ]
+    ).properties(
+        height=600,
+        width="container"
+    ).interactive()
+
+    # Build the chart for mobile
+    line_chart_bottom = alt.Chart(df_chart).mark_line(
         point=False,
     ).encode(
         #x=alt.X('timestamp:T', title='Thời gian', scale=alt.Scale(domain=[(latest_time - timedelta(hours=2)).tz_localize(None), latest_time.tz_localize(None)])),
@@ -173,11 +202,55 @@ if not df.empty:
             alt.Tooltip('votes:Q', title='Tỉ lệ bình chọn (%)', format='.2f')
         ]
     ).properties(
-        height=1000,
+        height=330,
         width="container"
     ).interactive()
 
-    st.altair_chart(line_chart, use_container_width=True)
+    #st.altair_chart(line_chart_bottom, use_container_width=True)
+
+    spec_right = json.dumps(line_chart_right.to_dict())
+    spec_bottom = json.dumps(line_chart_bottom.to_dict())
+
+    # Inject HTML + Vega Embed + Responsive CSS
+    vega_html = f"""
+    <div id="vis1" class="desktop-chart"></div>
+    <div id="vis2" class="mobile-chart"></div>
+
+    <style>
+      .desktop-chart, .mobile-chart {{
+        width: 100%;
+        height: 600px;
+      }}
+      @media (min-width: 768px) {{
+        .desktop-chart {{
+          display: block;
+        }}
+        .mobile-chart {{
+          display: none;
+        }}
+      }}
+      @media (max-width: 767px) {{
+        .desktop-chart {{
+          display: none;
+        }}
+        .mobile-chart {{
+          display: block;
+        }}
+      }}
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/vega@5" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6" defer></script>
+
+    <script>
+      window.addEventListener("load", function() {{
+        vegaEmbed('#vis1', {spec_right}, {{"actions": false}});
+        vegaEmbed('#vis2', {spec_bottom}, {{"actions": false}});
+      }});
+    </script>
+    """
+    components.html(vega_html, height=600)
 
    # Prepare DataFrame for display and export
     st.subheader("📋 Toàn bộ dữ liệu bình chọn")
