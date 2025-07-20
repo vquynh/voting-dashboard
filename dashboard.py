@@ -156,7 +156,7 @@ if not df.empty:
         interpolate='catmull-rom'  # ← Smooth interpolation
     ).encode(
         x=alt.X('timestamp:T', title='Thời gian', scale=alt.Scale(domain=[(latest_time - timedelta(hours=2)).tz_localize(None), latest_time.tz_localize(None)])),
-        y=alt.Y('votes:Q', title='Tỉ lệ bình chọn (%)', scale=alt.Scale(domain=[1, 16])),
+        y=alt.Y('votes:Q', title='Tỉ lệ bình chọn (%)', scale=alt.Scale(domain=[1, 13])),
         color=alt.Color('name:N', title='Tân binh',scale=alt.Scale(domain=sorted_names, range=colors_by_names),
             sort=None,
             legend=alt.Legend(
