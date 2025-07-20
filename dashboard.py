@@ -114,8 +114,8 @@ if not df.empty:
     all_rows_html = ""  # collect all rows here
 
     for _, row in latest_votes_sorted.iterrows():
-        is_top_3 = row["rank"] <= 3
-        bg_color = "#d4edda" if is_top_3 else "#f8d7da"  # Green or Red
+        is_top_2 = row["rank"] <= 2
+        bg_color = "#d4edda" if is_top_2 else "#f8d7da"  # Green or Red
 
         image_url = image_map.get(row["name"], "")
         img_html = f"<img src='{image_url}' width='30' style='border-radius:4px;'>" if image_url else ""
@@ -140,9 +140,10 @@ if not df.empty:
     # 📈 Altair Line Chart with Legend Sorted by Vote Score and UTC Timestamps
     st.subheader("📈 Tỉ lệ bình chọn theo thời gian")
 
-    # Step 1: Get latest vote per candidate and sort by vote descending
+    # Step 1: Get the latest vote per candidate and sort by vote descending
     latest_votes = df.loc[df.groupby('name')['timestamp'].idxmax()]
     latest_votes_sorted = latest_votes.sort_values(by='votes', ascending=False)
+
     sorted_names = latest_votes_sorted['name'].tolist()
     colors_by_names = [name_color_map.get(name, '#4e79a7') for name in sorted_names]  # Default to blue if not found
 
@@ -153,10 +154,10 @@ if not df.empty:
     # Build the chart
     line_chart = alt.Chart(df_chart).mark_line(
         point=False,
-        interpolate='catmull-rom'  # ← Smooth interpolation
     ).encode(
-        x=alt.X('timestamp:T', title='Thời gian', scale=alt.Scale(domain=[(latest_time - timedelta(hours=2)).tz_localize(None), latest_time.tz_localize(None)])),
-        y=alt.Y('votes:Q', title='Tỉ lệ bình chọn (%)', scale=alt.Scale(domain=[1, 13])),
+        #x=alt.X('timestamp:T', title='Thời gian', scale=alt.Scale(domain=[(latest_time - timedelta(hours=2)).tz_localize(None), latest_time.tz_localize(None)])),
+        x=alt.X('timestamp:T', title='Thời gian'),
+        y=alt.Y('votes:Q', title='Tỉ lệ bình chọn (%)'),
         color=alt.Color('name:N', title='Tân binh',scale=alt.Scale(domain=sorted_names, range=colors_by_names),
             sort=None,
             legend=alt.Legend(
