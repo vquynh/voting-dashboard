@@ -14,7 +14,7 @@ def init_db():
     with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute('''
-                CREATE TABLE IF NOT EXISTS votes (
+                CREATE TABLE IF NOT EXISTS votes_debut (
                     id SERIAL PRIMARY KEY,
                     timestamp TEXT,
                     name TEXT,
@@ -35,7 +35,7 @@ def receive_votes():
         with conn.cursor() as cur:
             for candidate in data['results']:
                 cur.execute('''
-                    INSERT INTO votes (timestamp, name, votes)
+                    INSERT INTO votes_debut (timestamp, name, votes)
                     VALUES (%s, %s, %s)
                 ''', (timestamp, candidate['name'], candidate['votes']))
             conn.commit()

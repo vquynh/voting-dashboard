@@ -15,17 +15,14 @@ name_color_map = {
     "Lê Phạm Minh Quân": "#ff7f0e",      # Orange
     "Nguyễn Thanh Phúc Nguyên": "#2ca02c",  # Green
     "Hồ Đông Quan": "#b21218",    # Red
-    "Nguyễn Văn Liêm": "#9467bd",      # Purple
     "Đặng Đức Duy": "#8c564b",    # Brown
     "Nguyễn Lâm Anh": "#fbb5bd",    # Pink
-    "Phạm Văn Tâm": "#7f7f7f",    # Gray
     "Thái Lê Minh Hiếu": "#bcbd22",     # Yellow-Green
     "Nguyễn Phi Long": "#17becf",     # Cyan
     "Bạch Hồng Cường": "#fb7f60",  # Light Red
     "Nguyễn Hữu Sơn": "silver",
     "Lê Bin Thế Vĩ": "#98df8a",   # Light Green
     "Tạ Hoàng Long": "yellow",    # Light Red
-    "Nguyễn Văn Khang": "#c5b0d5",    # Light Purple
     "Đỗ Minh Tân": "#c49c94",    # Light Brown
 }
 image_map = {
@@ -33,17 +30,14 @@ image_map = {
     "Lê Phạm Minh Quân": "https://asset.onfan.vn/voting/banner/avatarLePhamMinhQuan.jpg",
     "Nguyễn Thanh Phúc Nguyên": "https://asset.onfan.vn/voting/banner/avatarNguyenThanhPhucNguyen.jpg",  # Green
     "Hồ Đông Quan": "https://asset.onfan.vn/voting/banner/avatarHoongQuan.jpg",    # Red
-    "Nguyễn Văn Liêm": "https://asset.onfan.vn/voting/banner/avatarNguyenVanLiem.jpg",      # Purple
     "Đặng Đức Duy": "https://asset.onfan.vn/voting/banner/avatarangucDuy.jpg",    # Brown
     "Nguyễn Lâm Anh": "https://asset.onfan.vn/voting/banner/avatarNguyenLamAnh.jpg",    # Pink
-    "Phạm Văn Tâm": "https://asset.onfan.vn/voting/banner/avatarNguyenVanTam.jpg",    # Gray
     "Thái Lê Minh Hiếu": "https://asset.onfan.vn/voting/banner/avatarThaiLeMinhHieu.jpg",     # Yellow-Green
     "Nguyễn Phi Long": "https://asset.onfan.vn/voting/banner/avatarNguyenPhiLong.jpg",     # Cyan
     "Bạch Hồng Cường": "https://asset.onfan.vn/voting/banner/avatarBachHongCuong.jpg",  # Light Red
     "Nguyễn Hữu Sơn": "https://asset.onfan.vn/voting/banner/avatarNguyenHuuSon.jpg",
     "Lê Bin Thế Vĩ": "https://asset.onfan.vn/voting/banner/avatarLeBinTheVi.jpg",   # Light Green
     "Tạ Hoàng Long": "https://asset.onfan.vn/voting/banner/avatarTaHoangLong.jpg",    # Light Red
-    "Nguyễn Văn Khang": "https://asset.onfan.vn/voting/banner/avatarNguyenVanKhang.jpg",    # Light Purple
     "Đỗ Minh Tân": "https://asset.onfan.vn/voting/banner/avataroMinhTan.jpg",    # Light Brown
 }
 
@@ -65,7 +59,7 @@ def load_data():
     try:
         conn = psycopg2.connect(DB_URL)
         query = '''
-            SELECT timestamp, name, votes
+            SELECT timestamp, name, votes_debut
             FROM votes
             ORDER BY timestamp DESC
         '''
