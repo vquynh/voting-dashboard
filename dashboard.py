@@ -79,7 +79,7 @@ def load_data():
 # Load data
 df = load_data()
 # Page Title
-st.title("📊 Bình chọn Tân Binh Toàn Năng")
+st.title("📊 Bình chọn đội hình debut Tân Binh Toàn Năng")
 
 # Show latest update time
 if not df.empty:
@@ -113,7 +113,7 @@ if not df.empty:
     ##############################################################################
     # 3.  UI – ranked list with image, name, vote %
     ##############################################################################
-    st.subheader("🏆 Xếp hạng")
+    st.markdown("#### 🏆 Xếp hạng")
     all_rows_html = ""  # collect all rows here
 
     for _, row in latest_votes_sorted.iterrows():
@@ -140,9 +140,10 @@ if not df.empty:
     # Render all rows in one go
     st.markdown(all_rows_html, unsafe_allow_html=True)
 
-    # 📈 Altair Line Chart with Legend Sorted by Vote Score and UTC Timestamps
-    st.subheader("📈 Tỉ lệ bình chọn theo thời gian")
 
+##################################################################################
+
+    # 📈 Altair Line Chart with Legend Sorted by Vote Score and UTC Timestamps
     # Step 1: Get the latest vote per candidate and sort by vote descending
     latest_votes = df.loc[df.groupby('name')['timestamp'].idxmax()]
     latest_votes_sorted = latest_votes.sort_values(by='votes', ascending=False)
@@ -154,6 +155,38 @@ if not df.empty:
     df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_localize(None)
     df_chart = df.sort_values(by='timestamp')
 
+    ####################################################################################
+    # 📈 Altair Line Chart with Ranking Over Time
+    # Step 1: Add ranking per timestamp
+    df_chart['rank'] = df_chart.groupby('timestamp')['votes'].rank(method='dense', ascending=False)
+
+    # Step 2: Plot using Altair
+    rank_chart = alt.Chart(df_chart).mark_line(
+        point=alt.OverlayMarkDef(filled=False, fill='white')
+    ).encode(
+        x=alt.X('timestamp:T', title='Thời gian'),
+        y=alt.Y('rank:O', title='Xếp hạng', scale=alt.Scale(reverse=False),
+                axis=alt.Axis(tickCount=len(df['name'].unique()))),
+        color=alt.Color('name:N', title='Tân binh', scale=alt.Scale(domain=sorted_names, range=colors_by_names)),
+        tooltip=[
+            alt.Tooltip('timestamp:T', title='Thời gian', format='%Y-%m-%d %H:%M:%S'),
+            alt.Tooltip('name:N', title='Tân binh'),
+            alt.Tooltip('votes:Q', title='Số phiếu'),
+            alt.Tooltip('rank:O', title='Xếp hạng')
+        ]
+    ).properties(
+        height=400
+    ).configure_axis(
+        grid=False
+    ).interactive()
+
+    # Show in Streamlit
+    st.markdown("#### 📈 Xếp hạng theo thời gian")
+    st.altair_chart(rank_chart, use_container_width=True)
+
+    ####################################################################################
+
+    # 📊 Altair Bar Chart with Vote Percentages
     # Build the chart for a wide layout
     line_chart_right = alt.Chart(df_chart).mark_line(
         point=False,
@@ -169,6 +202,9 @@ if not df.empty:
                 labelLimit = 200,
                 labelFontSize=14,
                 titleFontSize=14,
+                labelPadding=10,
+                labelColor='gray',
+                symbolType='circle',
                 title=None,
                 # ← No title for the legend
             )),
@@ -195,6 +231,9 @@ if not df.empty:
                 orient='bottom',         # ← Move legend to the right
                 direction= 'vertical',  # ← Horizontal layout
                 labelLimit = 200,
+                labelPadding = 10,
+                labelColor = 'gray',
+                symbolType='circle',
                 title=None,
                 # ← No title for the legend
             )),
@@ -206,6 +245,8 @@ if not df.empty:
     ).properties(
         height=330,
         width="container"
+    ).configure_axis(
+        grid=False
     ).interactive()
 
     #st.altair_chart(line_chart_bottom, use_container_width=True)
@@ -252,10 +293,11 @@ if not df.empty:
       }});
     </script>
     """
+    st.markdown("#### 📈 Tỉ lệ bình chọn theo thời gian")
     components.html(vega_html, height=600)
 
    # Prepare DataFrame for display and export
-    st.subheader("📋 Toàn bộ dữ liệu bình chọn")
+    st.markdown("#### 📋 Toàn bộ dữ liệu bình chọn")
     sorted_df = df.sort_values(by='timestamp', ascending=False)[['timestamp', 'name', 'votes']]
     sorted_df['votes'] = sorted_df['votes'].map('{:.2f}'.format)
     sorted_df['timestamp'] = sorted_df['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S')
