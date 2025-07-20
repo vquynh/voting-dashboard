@@ -167,6 +167,8 @@ if not df.empty:
                 orient='right',         # ← Move legend to the right
                 direction= 'vertical',  # ← Vertical layout
                 labelLimit = 200,
+                labelFontSize=14,
+                titleFontSize=14,
                 title=None,
                 # ← No title for the legend
             )),
@@ -176,7 +178,7 @@ if not df.empty:
             alt.Tooltip('votes:Q', title='Tỉ lệ bình chọn (%)', format='.2f')
         ]
     ).properties(
-        height=600,
+        height=500,
         width="container"
     ).interactive()
 
