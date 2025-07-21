@@ -165,7 +165,7 @@ if not df.empty:
         point=alt.OverlayMarkDef(filled=False, fill='white')
     ).encode(
         x=alt.X('timestamp:T', title=None),
-        y=alt.Y('rank:O', title='Thứ hạng', scale=alt.Scale(reverse=False),
+        y=alt.Y('rank:O', title=None, scale=alt.Scale(reverse=False),
                 axis=alt.Axis(tickCount=len(df['name'].unique()))),
         color=alt.Color('name:N', title='Tân binh', scale=alt.Scale(domain=sorted_names, range=colors_by_names),
                         legend=alt.Legend(
