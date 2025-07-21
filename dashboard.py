@@ -22,7 +22,7 @@ name_color_map = {
     "Nguyễn Lâm Anh": "#fbb5bd",    # Pink
     "Thái Lê Minh Hiếu": "#bcbd22",     # Yellow-Green
     "Nguyễn Phi Long": "#17becf",     # Cyan
-    "Bạch Hồng Cường": "#fb7f60",  # Light Red
+    "Bạch Hồng Cường": "#f92a53",  # Light Red
     "Nguyễn Hữu Sơn": "silver",
     "Lê Bin Thế Vĩ": "#98df8a",   # Light Green
     "Tạ Hoàng Long": "yellow",    # Light Red
