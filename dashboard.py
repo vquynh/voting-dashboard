@@ -170,7 +170,8 @@ if not df.empty:
         color=alt.Color('name:N', title='Tân binh', scale=alt.Scale(domain=sorted_names, range=colors_by_names),
                         legend=alt.Legend(
                             orient='bottom', # ← Move legend to the right
-                            direction='horizontal',
+                            direction='vertical',
+                            padding=0,
                             columns=2,
                             labelLimit=200,
                             title=None,  # ← No title for the legend
@@ -201,12 +202,13 @@ if not df.empty:
     ).encode(
         #x=alt.X('timestamp:T', title='Thời gian', scale=alt.Scale(domain=[(latest_time - timedelta(hours=2)).tz_localize(None), latest_time.tz_localize(None)])),
         x=alt.X('timestamp:T', title=None),
-        y=alt.Y('votes:Q', title='Tỉ lệ bình chọn (%)'),
+        y=alt.Y('votes:Q', title=None),
         color=alt.Color('name:N', title='Tân binh',scale=alt.Scale(domain=sorted_names, range=colors_by_names),
             sort=None,
             legend=alt.Legend(
                 orient='bottom',         # ← Move legend to the right
-                direction= 'horizontal',  # ← Horizontal layout
+                direction='vertical',
+                padding=0,
                 columns=2,
                 labelLimit = 200,
                 symbolType='circle',
@@ -222,7 +224,7 @@ if not df.empty:
         width="container"
     ).interactive()
 
-    st.markdown("##### 📈 Tỉ lệ bình chọn theo thời gian")
+    st.markdown("##### 📈 Tỉ lệ bình chọn (%) theo thời gian")
     st.altair_chart(line_chart, use_container_width=True)
 
    # Prepare DataFrame for display and export
