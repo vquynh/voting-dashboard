@@ -184,13 +184,13 @@ if not df.empty:
             alt.Tooltip('rank:O', title='Xếp hạng')
         ]
     ).properties(
-        height=600
+        height=600,
+        title="📈 Thứ hạng theo thời gian"
     ).configure_axis(
         grid=False
     ).interactive()
 
     # Show in Streamlit
-    st.markdown("##### 📈 Thứ hạng theo thời gian")
     st.altair_chart(rank_chart, use_container_width=True)
 
     ####################################################################################
@@ -221,10 +221,10 @@ if not df.empty:
         ]
     ).properties(
         height=600,
-        width="container"
+        width="container",
+        title="📊 Tỉ lệ bình chọn (%) theo thời gian"
     ).interactive()
 
-    st.markdown("##### 📈 Tỉ lệ bình chọn (%) theo thời gian")
     st.altair_chart(line_chart, use_container_width=True)
 
    # Prepare DataFrame for display and export
