@@ -164,7 +164,7 @@ if not df.empty:
     rank_chart = alt.Chart(df_chart).mark_line(
         point=alt.OverlayMarkDef(filled=False, fill='white')
     ).encode(
-        x=alt.X('timestamp:T', title='Thời gian'),
+        x=alt.X('timestamp:T', title=None),
         y=alt.Y('rank:O', title='Thứ hạng', scale=alt.Scale(reverse=False),
                 axis=alt.Axis(tickCount=len(df['name'].unique()))),
         color=alt.Color('name:N', title='Tân binh', scale=alt.Scale(domain=sorted_names, range=colors_by_names),
@@ -173,7 +173,7 @@ if not df.empty:
                             direction='horizontal',
                             columns=2,
                             labelLimit=200,
-                            labelOverlap='greedy',
+                            title=None,  # ← No title for the legend
                         )
                     ),
         tooltip=[
@@ -200,7 +200,7 @@ if not df.empty:
         point=False,
     ).encode(
         #x=alt.X('timestamp:T', title='Thời gian', scale=alt.Scale(domain=[(latest_time - timedelta(hours=2)).tz_localize(None), latest_time.tz_localize(None)])),
-        x=alt.X('timestamp:T', title='Thời gian'),
+        x=alt.X('timestamp:T', title=None),
         y=alt.Y('votes:Q', title='Tỉ lệ bình chọn (%)'),
         color=alt.Color('name:N', title='Tân binh',scale=alt.Scale(domain=sorted_names, range=colors_by_names),
             sort=None,
@@ -209,10 +209,8 @@ if not df.empty:
                 direction= 'horizontal',  # ← Horizontal layout
                 columns=2,
                 labelLimit = 200,
-                labelPadding = 10,
                 symbolType='circle',
-                title=None,
-                # ← No title for the legend
+                title=None, # ← No title for the legend
             )),
         tooltip=[
             alt.Tooltip('timestamp:T', title='Thời gian', format='%Y-%m-%d %H:%M:%S'),
